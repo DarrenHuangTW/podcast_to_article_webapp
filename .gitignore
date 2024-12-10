@@ -1,4 +1,4 @@
 podcasts
 transcripts
-*.ipynb
+test_app.ipynb
 transcriber_cloud.py
