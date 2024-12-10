@@ -65,7 +65,7 @@ def main():
 
         st.title("Podcast to Article Converter")
 
-        st.markdown('<span style="color: grey;">請將音檔先壓縮後再上傳，https://www.freeconvert.com/mp3-compressor</span>', unsafe_allow_html=True)
+        st.markdown('<span style="color: grey;">音檔必須小於25MB，請將音檔先壓縮後再上傳，https://www.freeconvert.com/mp3-compressor</span>', unsafe_allow_html=True)
         uploaded_file = st.file_uploader("Upload an MP3 file", type=["mp3"])
         
         prompt_text = st.text_input("請輸入音檔中可能出現的專有名詞，幫助逐字稿的準確度", "談話食間, 佩佩, (add keywords)")
@@ -73,6 +73,7 @@ def main():
         if st.button("Generate"):
             if password == "周杰倫最帥":
                 if uploaded_file is not None:
+                    os.makedirs("podcasts", exist_ok=True)
                     audio_path = os.path.join("podcasts", uploaded_file.name)
                     with open(audio_path, "wb") as f:
                         f.write(uploaded_file.getbuffer())
