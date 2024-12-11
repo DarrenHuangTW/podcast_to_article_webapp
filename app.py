@@ -49,7 +49,9 @@ def transcript_to_markdown(client, transcript, example_transcripts, example_mark
     if article_content:
         return article_content.group(1).strip()
     else:
-        return "No <article> tag found in the response content."
+        return ("拍謝，AI的回答沒有按造指令，下面是其完整的回答。請在裡面尋找<article>標籤，應該就能找到所生成的文章了，"
+                "所使用的是markdown格式，可以貼到這個網址預覽: https://claude.site/artifacts/39f78d93-52a9-48ee-90ac-0732c48f9835\n\n"
+                f"{response.content[0].text}")
     
 
 
@@ -63,56 +65,89 @@ def main():
         openai.api_key = openai_api_key
         client = anthropic.Anthropic(api_key=claude_api_key)
 
-        st.title("Podcast to Article Converter")
+        st.title("佩佩談話食間專用: Podcast to Article小工具")
 
-        st.markdown('<span style="color: grey;">音檔必須小於25MB，請將音檔先壓縮後再上傳，https://www.freeconvert.com/mp3-compressor</span>', unsafe_allow_html=True)
-        uploaded_file = st.file_uploader("Upload an MP3 file", type=["mp3"])
-        
-        prompt_text = st.text_input("請輸入音檔中可能出現的專有名詞，幫助逐字稿的準確度", "談話食間, 佩佩, (add keywords)")
+        # Create tabs
+        tab1, tab2 = st.tabs(["MP3", "Transcript"])
 
-        if st.button("Generate"):
-            if password == "周杰倫最帥":
-                if uploaded_file is not None:
-                    os.makedirs("podcasts", exist_ok=True)
-                    audio_path = os.path.join("podcasts", uploaded_file.name)
-                    with open(audio_path, "wb") as f:
-                        f.write(uploaded_file.getbuffer())
+        with tab1:
+            st.markdown('<span style="color: grey;">音檔必須小於25MB，請將音檔先壓縮後再上傳，https://www.freeconvert.com/mp3-compressor</span>', unsafe_allow_html=True)
+            uploaded_file = st.file_uploader("Upload an MP3 file", type=["mp3"])
+            
+            prompt_text = st.text_input("請輸入音檔中可能出現的專有名詞，幫助逐字稿的準確度", "談話食間, 佩佩, (add keywords)")
 
-                    st.success("Audio file uploaded successfully.")
+            if st.button("Generate"):
+                if password == "周杰倫最帥":
+                    if uploaded_file is not None:
+                        os.makedirs("podcasts", exist_ok=True)
+                        audio_path = os.path.join("podcasts", uploaded_file.name)
+                        with open(audio_path, "wb") as f:
+                            f.write(uploaded_file.getbuffer())
 
-                    with st.spinner('逐字稿製作中...'):
-                        transcript = transcribe_audio(audio_path, prompt_text=prompt_text)
-                    st.subheader("逐字稿:")
-                    st.text_area("", transcript, height=300)
+                        st.success("Audio file uploaded successfully.")
 
+                        with st.spinner('逐字稿製作中...'):
+                            transcript = transcribe_audio(audio_path, prompt_text=prompt_text)
+                        st.subheader("逐字稿:")
+                        st.text_area("Transcript", transcript, height=300)
 
-                    # Load example transcripts and markdowns
-                    example_transcripts = [
-                        open("./example_transcripts/麥特.txt", "r", encoding="utf-8").read(),
-                        open("./example_transcripts/赤鳶.txt", "r", encoding="utf-8").read(),
-                        open("./example_transcripts/lazy_patisserie.txt", "r", encoding="utf-8").read(),
-                        open("./example_transcripts/cornerstone.txt", "r", encoding="utf-8").read()
-                    ]
+                        # Load example transcripts and markdowns
+                        example_transcripts = [
+                            open("./example_transcripts/麥特.txt", "r", encoding="utf-8").read(),
+                            open("./example_transcripts/赤鳶.txt", "r", encoding="utf-8").read(),
+                            open("./example_transcripts/lazy_patisserie.txt", "r", encoding="utf-8").read(),
+                            open("./example_transcripts/cornerstone.txt", "r", encoding="utf-8").read()
+                        ]
 
-                    example_markdowns = [
-                        open("./example_markdowns/麥特.md", "r", encoding="utf-8").read(),
-                        open("./example_markdowns/赤鳶.md", "r", encoding="utf-8").read(),
-                        open("./example_markdowns/lazy_patisserie.md", "r", encoding="utf-8").read(),
-                        open("./example_markdowns/cornerstone.md", "r", encoding="utf-8").read()
-                    ]
+                        example_markdowns = [
+                            open("./example_markdowns/麥特.md", "r", encoding="utf-8").read(),
+                            open("./example_markdowns/赤鳶.md", "r", encoding="utf-8").read(),
+                            open("./example_markdowns/lazy_patisserie.md", "r", encoding="utf-8").read(),
+                            open("./example_markdowns/cornerstone.md", "r", encoding="utf-8").read()
+                        ]
 
-                    with st.spinner('寫手趕稿中...'):
-                        markdown = transcript_to_markdown(client, transcript, example_transcripts, example_markdowns)
-                    st.divider()
-                    st.subheader("文章:")
-                    st.markdown(markdown)
+                        with st.spinner('寫手趕稿中...'):
+                            markdown = transcript_to_markdown(client, transcript, example_transcripts, example_markdowns)
+                        st.divider()
+                        st.subheader("文章:")
+                        st.markdown(markdown)
 
+                    else:
+                        st.error("Please upload an MP3 file.")
                 else:
-                    st.error("Please upload an MP3 file.")
+                    st.error("誰最帥呀? 說了才能用喔!😉")
             else:
-                st.error("說了才能用喔!😉")
-        else:
-            st.error("Please provide both OpenAI and Claude API keys.")
+                st.error("Please provide both OpenAI and Claude API keys.")
+
+        with tab2:
+            transcript_input = st.text_area("Paste your transcript here:", height=300)
+            if st.button("Generate from Transcript"):
+                if password == "周杰倫最帥":
+                    if transcript_input:
+                        # Load example transcripts and markdowns
+                        example_transcripts = [
+                            open("./example_transcripts/麥特.txt", "r", encoding="utf-8").read(),
+                            open("./example_transcripts/赤鳶.txt", "r", encoding="utf-8").read(),
+                            open("./example_transcripts/lazy_patisserie.txt", "r", encoding="utf-8").read(),
+                            open("./example_transcripts/cornerstone.txt", "r", encoding="utf-8").read()
+                        ]
+
+                        example_markdowns = [
+                            open("./example_markdowns/麥特.md", "r", encoding="utf-8").read(),
+                            open("./example_markdowns/赤鳶.md", "r", encoding="utf-8").read(),
+                            open("./example_markdowns/lazy_patisserie.md", "r", encoding="utf-8").read(),
+                            open("./example_markdowns/cornerstone.md", "r", encoding="utf-8").read()
+                        ]
+
+                        with st.spinner('寫手趕稿中...'):
+                            markdown = transcript_to_markdown(client, transcript_input, example_transcripts, example_markdowns)
+                        st.divider()
+                        st.subheader("文章:")
+                        st.markdown(markdown)
+                    else:
+                        st.error("Please provide a transcript.")
+                else:
+                    st.error("誰最帥呀? 說了才能用喔!😉")
 
 if __name__ == "__main__":
     main()
