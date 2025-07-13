@@ -3,5 +3,5 @@ transcripts
 test_app.ipynb
 transcriber_cloud.py
 ignore
-test
+tests
 gemini_request.md
