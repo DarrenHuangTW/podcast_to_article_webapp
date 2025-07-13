@@ -61,7 +61,6 @@ def transcript_to_markdown(client, transcript, example_transcripts, example_mark
     else:
         raise ValueError("不支援的模型 ID。")
 
-    article_content = re.search(r'<article>(.*?)</article>', response.content[0].text, re.DOTALL)
     
     if article_content:
         return article_content.group(1).strip()
@@ -151,7 +150,7 @@ def main():
                             st.subheader("逐字稿：")
                             st.text_area("逐字稿", transcript, height=300)
 
-                            status.write("正在生成文章...")
+                            status.write(f"正在生成文章... (模型: {model_id})")
                             generate_article_from_transcript(client, transcript, model_id)
                             status.update(label="完成！", state="complete")
 
@@ -167,7 +166,7 @@ def main():
                 if password == "周杰倫最帥":
                     if transcript_input:
                         with st.status("處理中...") as status:
-                            status.write("正在生成文章...")
+                            status.write(f"正在生成文章... (模型: {model_id})")
                             generate_article_from_transcript(client, transcript_input, model_id)
                             status.update(label="完成！", state="complete")
                     else:
