@@ -153,7 +153,7 @@ def main():
 
                             status.write("正在生成文章...")
                             generate_article_from_transcript(client, transcript, model_id)
-                            status.update(label="完成！", state="complete", expanded=False)
+                            status.update(label="完成！", state="complete")
 
                     else:
                         st.error("請上傳 MP3 檔案。")
@@ -166,10 +166,10 @@ def main():
             if st.button("從逐字稿生成"):
                 if password == "周杰倫最帥":
                     if transcript_input:
-                        with st.status("處理中...", expand=True) as status:
+                        with st.status("處理中...") as status:
                             status.write("正在生成文章...")
                             generate_article_from_transcript(client, transcript_input, model_id)
-                            status.update(label="完成！", state="complete", expanded=False)
+                            status.update(label="完成！", state="complete")
                     else:
                         st.error("請提供逐字稿。")
                 else:
