@@ -4,9 +4,9 @@ import openai
 import anthropic
 import re
 
-def transcribe_audio(file_path, model_name="whisper-1", prompt_text=None):
+def transcribe_audio(gpt_client, file_path, model_name="whisper-1", prompt_text=None):
     with open(file_path, "rb") as audio_file:
-        transcription = openai.audio.transcriptions.create(
+        transcription = gpt_client.audio.transcriptions.create(
             model=model_name,
             file=audio_file,
             prompt=prompt_text
@@ -114,6 +114,8 @@ def main():
     selected_model_name = st.sidebar.selectbox("選擇一個模型：", list(model_options.keys()))
     model_id = model_options[selected_model_name]
 
+    gpt_client = openai.OpenAI(api_key=openai_api_key)
+
     if openai_api_key and claude_api_key:
         if "gpt" in model_id:
             client = openai.OpenAI(api_key=openai_api_key)
@@ -146,7 +148,7 @@ def main():
                             st.success("音檔上傳成功。")
 
                             status.write("正在轉錄音檔（這可能需要幾分鐘）...")
-                            transcript = transcribe_audio(audio_path, prompt_text=prompt_text)
+                            transcript = transcribe_audio(gpt_client, audio_path, prompt_text=prompt_text)
                             st.subheader("逐字稿：")
                             st.text_area("逐字稿", transcript, height=300)
 
